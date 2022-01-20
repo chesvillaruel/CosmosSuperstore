@@ -1,0 +1,45 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "cosmossuperstore",
+						"type": "DatasetReference"
+					},
+					"name": "orderssuperstore"
+				},
+				{
+					"dataset": {
+						"referenceName": "cosmossuperstore_regioncost",
+						"type": "DatasetReference"
+					},
+					"name": "regioncost"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CosmosDbSqlApiCollection1",
+						"type": "DatasetReference"
+					},
+					"name": "cosmossuperstore"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Join1"
+				},
+				{
+					"name": "Select1"
+				},
+				{
+					"name": "Sort1"
+				}
+			],
+			"script": "source(output(\n\t\t{Row ID} as string,\n\t\t{Order Priority} as string,\n\t\tDiscount as string,\n\t\t{Unit Price} as string,\n\t\t{Shipping Cost} as string,\n\t\t{Customer ID} as string,\n\t\t{Customer Name} as string,\n\t\t{Ship Mode} as string,\n\t\t{Customer Segment} as string,\n\t\t{Product Category} as string,\n\t\t{Product Sub-Category} as string,\n\t\t{Product Container} as string,\n\t\t{Product Name} as string,\n\t\t{Product Base Margin} as string,\n\t\tCountry as string,\n\t\tRegion as string,\n\t\t{State or Province} as string,\n\t\tCity as string,\n\t\t{Postal Code} as string,\n\t\t{Order Date} as string,\n\t\t{Ship Date} as string,\n\t\tProfit as string,\n\t\t{Quantity ordered new} as string,\n\t\tSales as string,\n\t\t{Order ID} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> orderssuperstore\nsource(output(\n\t\tRegion as string,\n\t\tCost as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> regioncost\norderssuperstore, regioncost join(orderssuperstore@Region == regioncost@Region,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> Join1\nJoin1 select(mapColumn(\n\t\t{Row ID},\n\t\t{Order Priority},\n\t\tDiscount,\n\t\t{Unit Price},\n\t\t{Shipping Cost},\n\t\t{Customer ID},\n\t\t{Customer Name},\n\t\t{Ship Mode},\n\t\t{Customer Segment},\n\t\t{Product Category},\n\t\t{Product Sub-Category},\n\t\t{Product Container},\n\t\t{Product Name},\n\t\t{Product Base Margin},\n\t\tCountry,\n\t\tRegion = orderssuperstore@Region,\n\t\t{State or Province},\n\t\tCity,\n\t\t{Postal Code},\n\t\t{Order Date},\n\t\t{Ship Date},\n\t\tProfit,\n\t\t{Quantity ordered new},\n\t\tSales,\n\t\t{Order ID},\n\t\tRegion = regioncost@Region,\n\t\tCost\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 sort(asc({Order ID}, true)) ~> Sort1\nSort1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'document',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> cosmossuperstore"
+		}
+	}
+}
