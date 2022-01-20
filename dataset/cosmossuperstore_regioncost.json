@@ -1,0 +1,30 @@
+{
+	"name": "cosmossuperstore_regioncost",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Region_Cost",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "P1-SuperStoreUS-2015_12082021_1.xls",
+				"container": "chescoscont"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "Region",
+				"type": "String"
+			},
+			{
+				"name": "Cost",
+				"type": "String"
+			}
+		]
+	}
+}
